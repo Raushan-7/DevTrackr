@@ -123,13 +123,7 @@ const Login = () => {
             </button>
           </form>
 
-          {/* Seed account reminder helper */}
-          <div className="mt-5 p-3 rounded-xl bg-slate-50 border border-slate-150 text-center dark:bg-slate-900/40 dark:border-slate-800/40">
-            <p className="text-[11px] text-slate-500 dark:text-slate-450">
-              💡 Testing offline? Use the seeded credentials: <br/>
-              <strong className="text-slate-700 dark:text-slate-305">demo@devtrackr.com</strong> / <strong className="text-slate-700 dark:text-slate-305">password123</strong>
-            </p>
-          </div>
+
         </div>
 
         {/* Footer Redirect link */}

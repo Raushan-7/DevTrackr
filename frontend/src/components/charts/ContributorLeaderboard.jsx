@@ -27,8 +27,9 @@ const CustomTooltip = ({ active, payload }) => {
 const ContributorLeaderboard = ({ data = [] }) => {
   if (!data || data.length === 0) {
     return (
-      <div className="flex h-64 items-center justify-center text-slate-400 text-sm">
-        No contributor details available
+      <div className="flex h-64 flex-col items-center justify-center text-slate-450 dark:text-slate-500 text-sm gap-2 text-center">
+        <span className="text-3xl">👥</span>
+        <span>No contributor data available for this repository.</span>
       </div>
     );
   }

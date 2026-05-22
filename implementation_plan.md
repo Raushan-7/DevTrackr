@@ -1,174 +1,123 @@
-# DevTrackr - AI Developer Productivity Dashboard Implementation Plan
+# Implementation Plan - DevTrackr Refactoring
 
-This document outlines the architecture, database models, API design, frontend pages, and step-by-step plan for building DevTrackr.
+This plan details the changes required to update DevTrackr branding, remove all demo/mock/seed data, implement robust empty state UIs, standardize AI model consistency to Gemini, and verify the React Query setup.
 
 ## User Review Required
 
-> [!IMPORTANT]
-> **Gemini Model Choice**: We will use `gemini-1.5-flash` or `gemini-2.5-flash` via the `@google/generative-ai` SDK. Gemini models support structured JSON outputs natively, which makes it perfect for generating our sprint reports.
->
-> **Encryption Key**: We will use a standard 32-byte hexadecimal key for `GITHUB_ENCRYPTION_KEY` to encrypt GitHub Personal Access Tokens (PATs) using `aes-256-cbc`.
->
-> **GitHub Auth / PAT Flow**: Since OAuth is more complex for local setups without a registered app, we will use a **Personal Access Token (PAT)** settings form as requested. The user must provide a PAT with `repo` and `read:user` permissions.
+> [!WARNING]
+> All demo credentials and local fallback mock data will be deleted. Ensure you have a valid GitHub Personal Access Token (PAT) with `repo` and `read:user` scopes configured in the settings after the deployment.
+> The database seeder script `backend/src/scripts/seed.js` will be deleted.
+
+## Open Questions
+
+None. The requirements are clear, and the codebase structure has been researched and mapped out.
 
 ## Proposed Changes
 
-We will create a root folder named `devtrackr` containing two sub-folders: `backend` and `frontend`.
+---
+
+### CHANGE 1 — UPDATE BRANDING
+
+We will update the tagline and document title across all occurrences.
+
+#### [MODIFY] [Sidebar.jsx](file:///e:/Dev%20Tracker/frontend/src/components/Sidebar.jsx)
+- Replace line 61 tagline:
+  - **Old**: `"Increase delivery velocity with AI performance analysis."`
+  - **New**: `"Turn your GitHub activity into actionable team insights."`
+
+#### [MODIFY] [index.html](file:///e:/Dev%20Tracker/frontend/index.html)
+- Update page title to: `<title>DevTrackr - Turn your GitHub activity into actionable team insights.</title>`
+- Add meta tag: `<meta name="description" content="Turn your GitHub activity into actionable team insights." />`
 
 ---
 
-### Backend Components
+### CHANGE 2 — REMOVE ALL DEMO/MOCK/SEED DATA
 
-#### [NEW] [db.js](file:///E:/Dev%20Tracker/devtrackr/backend/src/config/db.js)
-Sets up Mongoose to connect to MongoDB.
+We will delete mock data, mock files, and references.
 
-#### [NEW] [env.js](file:///E:/Dev%20Tracker/devtrackr/backend/src/config/env.js)
-Validates that all required environment variables (`MONGODB_URI`, `JWT_SECRET`, `ANTHROPIC_API_KEY`, `GITHUB_ENCRYPTION_KEY`, `PORT`) are present.
+#### [DELETE] [seed.js](file:///e:/Dev%20Tracker/backend/src/scripts/seed.js)
+- Remove backend seeding script entirely.
 
-#### [NEW] [User.js](file:///E:/Dev%20Tracker/devtrackr/backend/src/models/User.js)
-Mongoose model for users:
-- `name` (String, required)
-- `email` (String, required, unique)
-- `passwordHash` (String, required)
-- `githubToken` (String, encrypted, optional)
-- `githubUsername` (String, optional)
-- `createdAt` (Date, default Date.now)
+#### [MODIFY] [Login.jsx](file:///e:/Dev%20Tracker/frontend/src/pages/Login.jsx)
+- Remove the "Seed account reminder helper" banner UI.
 
-#### [NEW] [Repository.js](file:///E:/Dev%20Tracker/devtrackr/backend/src/models/Repository.js)
-Mongoose model for tracked repositories:
-- `owner` (String, required)
-- `repo` (String, required)
-- `userId` (ObjectId ref User, required)
-- `lastSynced` (Date, default Date.now)
+#### [MODIFY] [github.js](file:///e:/Dev%20Tracker/backend/src/routes/github.js)
+- Delete the `MOCK_REPOS` and `MOCK_STATS` objects.
+- Remove `dummy_` token checks from `getDecryptedToken` and routes.
+- Remove fallback logic in `/repos`, `/repos/:owner/:repo/stats`, and `/repos/:owner/:repo/contributors`.
 
-#### [NEW] [AnalysisReport.js](file:///E:/Dev%20Tracker/devtrackr/backend/src/models/AnalysisReport.js)
-Mongoose model for AI analysis reports with a 6-hour TTL:
-- `owner` (String, required)
-- `repo` (String, required)
-- `userId` (ObjectId ref User, required)
-- `data` (Object, representing the JSON response from Claude)
-- `createdAt` (Date, default Date.now, expires '6h')
+#### [MODIFY] [reports.js](file:///e:/Dev%20Tracker/backend/src/routes/reports.js)
+- Remove the `if (reportId === 'demo')` hardcoded fallback block in `/export/:reportId` route.
 
-#### [NEW] [authMiddleware.js](file:///E:/Dev%20Tracker/devtrackr/backend/src/middleware/authMiddleware.js)
-Verifies the JWT token from the `Authorization: Bearer <token>` header, decodes it, and attaches the User object to `req.user`.
-
-#### [NEW] [errorHandler.js](file:///E:/Dev%20Tracker/devtrackr/backend/src/middleware/errorHandler.js)
-Global Express error handling middleware that returns JSON-formatted error responses.
-
-#### [NEW] [helpers.js](file:///E:/Dev%20Tracker/devtrackr/backend/src/utils/helpers.js)
-Contains crypto helpers for encrypting and decrypting the GitHub PAT (`aes-256-cbc`) using `GITHUB_ENCRYPTION_KEY`.
-
-#### [NEW] [pdfExport.js](file:///E:/Dev%20Tracker/devtrackr/backend/src/utils/pdfExport.js)
-Uses `pdfkit` to generate a styled developer productivity PDF report.
-
-#### [NEW] [githubService.js](file:///E:/Dev%20Tracker/devtrackr/backend/src/services/githubService.js)
-Encapsulates all Octokit REST calls. Uses exponential backoff for retrying if rate limits (429) are encountered.
-Fetches:
-- Repositories list
-- Repository stats (commits last 90 days, PR counts, issues counts, contributors, code frequency)
-- Contributor details
-
-#### [NEW] [aiService.js](file:///E:/Dev%20Tracker/devtrackr/backend/src/services/aiService.js)
-Handles interaction with the Anthropic Claude API. Generates structured JSON output for repo analysis and summaries of commit batches.
-
-#### [NEW] [analyticsService.js](file:///E:/Dev%20Tracker/devtrackr/backend/src/services/analyticsService.js)
-Integrates and formats data from githubService to feed the frontend charts and metrics.
-
-#### [NEW] [auth.js controller & routes](file:///E:/Dev%20Tracker/devtrackr/backend/src/controllers/auth.js) / [auth.js route](file:///E:/Dev%20Tracker/devtrackr/backend/src/routes/auth.js)
-Endpoints:
-- `POST /api/auth/signup` (Validate, hash password, create user)
-- `POST /api/auth/login` (Validate credentials, generate JWT)
-- `GET /api/auth/me` (Fetch current user details)
-- `POST /api/auth/github-token` (Update and encrypt GitHub PAT)
-
-#### [NEW] [github.js controller & routes](file:///E:/Dev%20Tracker/devtrackr/backend/src/controllers/github.js) / [github.js route](file:///E:/Dev%20Tracker/devtrackr/backend/src/routes/github.js)
-Endpoints:
-- `GET /api/github/repos` (Fetch user's GitHub repos using their PAT)
-- `GET /api/github/repos/:owner/:repo/stats` (Fetch commits, PRs, issues, code frequency, contributors)
-- `GET /api/github/repos/:owner/:repo/contributors` (Fetch per-contributor stats)
-
-#### [NEW] [ai.js controller & routes](file:///E:/Dev%20Tracker/devtrackr/backend/src/controllers/ai.js) / [ai.js route](file:///E:/Dev%20Tracker/devtrackr/backend/src/routes/ai.js)
-Endpoints:
-- `POST /api/ai/analyze` (Run or return cached AI analysis)
-- `POST /api/ai/summarize-commits` (Generate changelog from a batch of commit messages)
-
-#### [NEW] [dashboard.js controller & routes](file:///E:/Dev%20Tracker/devtrackr/backend/src/controllers/dashboard.js) / [dashboard.js route](file:///E:/Dev%20Tracker/devtrackr/backend/src/routes/dashboard.js)
-Endpoints:
-- `GET /api/dashboard/summary` (Retrieve aggregate counts and historical data for charts)
-
-#### [NEW] [reports.js controller & routes](file:///E:/Dev%20Tracker/devtrackr/backend/src/controllers/reports.js) / [reports.js route](file:///E:/Dev%20Tracker/devtrackr/backend/src/routes/reports.js)
-Endpoints:
-- `GET /api/reports/export/:reportId` (Generate and download a PDF report containing chart data tables, AI analysis summary, and recommendations)
-
-#### [NEW] [server.js](file:///E:/Dev%20Tracker/devtrackr/backend/server.js)
-Main application entry point. Sets up express, middleware, mounts routes, and starts listening on `PORT`.
+#### [NEW] [.env.example](file:///e:/Dev%20Tracker/backend/.env.example)
+- Expose required env configuration variables with instructions. Ensure `GEMINI_API_KEY` is present and **NO** `ANTHROPIC_API_KEY` is referenced.
 
 ---
 
-### Frontend Components
+### CHANGE 3 — ADD EMPTY STATE UI
 
-#### [NEW] [vite.config.js](file:///E:/Dev%20Tracker/devtrackr/frontend/vite.config.js)
-Vite configuration with Tailwind CSS integration and dev server proxy settings.
+We will implement dedicated centered empty state components matching the user instructions.
 
-#### [NEW] [api.js](file:///E:/Dev%20Tracker/devtrackr/frontend/src/services/api.js)
-Centralized Axios instance with a request interceptor to append the JWT `Authorization: Bearer <token>` header dynamically.
+#### [MODIFY] [Repos.jsx](file:///e:/Dev%20Tracker/frontend/src/pages/Repos.jsx)
+- Update empty repos list state to display: `"No repositories found. Add your GitHub PAT in Settings to get started."`
+- Display centered layout, `GitFork` icon, and a call-to-action button link: `"Go to Settings"`.
 
-#### [NEW] [AuthContext.jsx](file:///E:/Dev%20Tracker/devtrackr/frontend/src/context/AuthContext.jsx) & [useAuth.js](file:///E:/Dev%20Tracker/devtrackr/frontend/src/hooks/useAuth.js)
-Manages user authentication state, signup/login operations, token storage in localStorage, and authentication persistence.
+#### [MODIFY] [Dashboard.jsx](file:///e:/Dev%20Tracker/frontend/src/pages/Dashboard.jsx)
+- Update empty stats state to display: `"No data yet. Select a repository and run an analysis."`
+- Display centered layout, `Database` icon, and a call-to-action button link: `"Go to Repositories"`.
 
-#### [NEW] [useGitHub.js](file:///E:/Dev%20Tracker/devtrackr/frontend/src/hooks/useGitHub.js)
-React Query hooks for querying repo listings, statistics, and contributor information.
+#### [MODIFY] [AIInsights.jsx](file:///e:/Dev%20Tracker/frontend/src/pages/AIInsights.jsx)
+- Update empty insights state to display: `"No insights generated yet. Click Analyze on any repository."`
+- Display centered layout, `Sparkles` icon, and a call-to-action button link: `"Analyze Now"`.
 
-#### [NEW] [useAI.js](file:///E:/Dev%20Tracker/devtrackr/frontend/src/hooks/useAI.js)
-React Query hooks for requesting repository AI analysis and commit summary/changelogs.
+#### [MODIFY] [ContributorLeaderboard.jsx](file:///e:/Dev%20Tracker/frontend/src/components/charts/ContributorLeaderboard.jsx)
+- Update empty state to display: `"No contributor data available for this repository."` with a `👥` emoji icon.
 
-#### [NEW] [App.jsx](file:///E:/Dev%20Tracker/devtrackr/frontend/src/App.jsx)
-Sets up routes, React Query client provider, and AuthContext. Implements layout routing.
+#### [MODIFY] [CommitActivityChart.jsx](file:///e:/Dev%20Tracker/frontend/src/components/charts/CommitActivityChart.jsx)
+- Add centered `📊` emoji placeholder if empty.
 
-#### [NEW] [Components (Navbar, Sidebar, Charts, Cards)](file:///E:/Dev%20Tracker/devtrackr/frontend/src/components/)
-- **Navbar**: App logo, user profile summary, dark mode toggle.
-- **Sidebar**: Links for Dashboard, Repositories, AI Insights, Settings.
-- **Charts**:
-  - `CommitActivityChart`: Responsive BarChart for daily commits.
-  - `PRStatusChart`: Responsive PieChart of PR status breakdown.
-  - `ContributorLeaderboard`: Responsive horizontal BarChart of top contributors.
-  - `IssuesTrendChart`: Responsive LineChart comparing open/closed issues.
-  - `CodeChurnChart`: Responsive AreaChart displaying additions/deletions.
-- **Cards**: Reusable UI cards for metrics, alerts, severity levels, and priority items.
+#### [MODIFY] [PRStatusChart.jsx](file:///e:/Dev%20Tracker/frontend/src/components/charts/PRStatusChart.jsx)
+- Add centered `🔀` emoji placeholder if empty.
 
-#### [NEW] [Pages](file:///E:/Dev%20Tracker/devtrackr/frontend/src/pages/)
-- **Login**: Elegant login page.
-- **Signup**: Signup page with client-side validation.
-- **Dashboard**: Repo selector, core metrics widgets (total commits, PRs, issues, churn), and the 5 charts.
-- **Repos**: Displays list of repos from the user's GitHub with quick-analyze triggers.
-- **AIInsights**: Detailed visualization of Claude's report (sprint summary, gauge score, bottleneck badges, priority board, recommendations, and PDF Export trigger).
-- **Settings**: Setting form to update user profile and submit/save their GitHub PAT.
+#### [MODIFY] [CodeChurnChart.jsx](file:///e:/Dev%20Tracker/frontend/src/components/charts/CodeChurnChart.jsx)
+- Add centered `📈` emoji placeholder if empty.
+
+#### [MODIFY] [IssuesTrendChart.jsx](file:///e:/Dev%20Tracker/frontend/src/components/charts/IssuesTrendChart.jsx)
+- Add centered `⚠️` emoji placeholder if empty.
 
 ---
 
-### Additional Deliverables
+### CHANGE 4 — FIX AI MODEL CONSISTENCY
 
-#### [NEW] [seed.js](file:///E:/Dev%20Tracker/devtrackr/scripts/seed.js)
-Creates a mock user (`demo@devtrackr.com` / `password123`) and seeds a mock repository + analysis report in MongoDB for testing out-of-the-box functionality without an active internet connection or key.
+Standardize to Gemini and remove Anthropic references.
 
-#### [NEW] [docker-compose.yml](file:///E:/Dev%20Tracker/devtrackr/docker-compose.yml)
-Orchestrates MongoDB, backend (Express), and frontend (Vite) for immediate local environment setup.
+#### [MODIFY] [aiService.js](file:///e:/Dev%20Tracker/backend/src/services/aiService.js)
+- Explicitly instantiate model at module-level (using CommonJS module syntax):
+  ```javascript
+  const { GoogleGenerativeAI } = require("@google/generative-ai");
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  ```
+- Prompt Gemini to return **ONLY** valid JSON (no markdown, no backticks, no preamble).
+- Safely parse the output with a `try/catch` wrapper around `JSON.parse`.
+- Replace any references in comments/docs.
 
-#### [NEW] [README.md](file:///E:/Dev%20Tracker/devtrackr/README.md)
-Detailed setup instructions, explanation of environmental configuration, and comprehensive API routing documentation.
+---
+
+### CHANGE 5 — QueryClientProvider VERIFICATION
+
+#### [MODIFY] [App.jsx](file:///e:/Dev%20Tracker/frontend/src/App.jsx)
+- Already contains `QueryClientProvider` and `queryClient` setup. We will verify and ensure it remains correct.
 
 ---
 
 ## Verification Plan
 
 ### Automated Verification
-- We will verify that each API response has validation.
-- We will verify database connection, JWT token issuance, and password hashing via manual curl/postman calls or writing a scratch test script.
-- We will verify front-end compilation and routing using Vite's build tools.
+- Run a frontend build `npm run build` to verify clean compilation.
+- Execute a test script to query backend routes and check if they return error codes instead of hardcoded demo data when accessed without a valid token.
 
 ### Manual Verification
-- Launch the application locally.
-- Test user registration and login.
-- Test adding a mock/real PAT, fetching repositories, generating analysis reports, and rendering all Recharts.
-- Verify download of the export PDF from the front-end.
-- Ensure light/dark mode toggles modify the HTML classes appropriately and update stored states.
+- Test user interface empty states by logging in with a new user account (with no PAT configured) and navigating to Repositories, Dashboard, and AI Insights.
+- Verify that the tagline on the Sidebar has changed to the new tagline.
+- Verify index.html page title in browser tabs.

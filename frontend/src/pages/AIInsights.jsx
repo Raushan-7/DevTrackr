@@ -308,17 +308,17 @@ const AIInsights = () => {
 
         </div>
       ) : (
-        <div className="flex h-96 flex-col items-center justify-center p-8 text-center glass-card">
+        <div className="flex h-[450px] flex-col items-center justify-center p-8 text-center glass-card">
           <Sparkles size={40} className="text-slate-400 dark:text-slate-500 mb-4" />
-          <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300">No report generated yet</h3>
-          <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 max-w-md">
-            Click the sync button below to prompt Gemini to compile recent repository details and commit changes.
+          <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300">No insights generated yet</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-450 mt-2 max-w-md">
+            No insights generated yet. Click Analyze on any repository.
           </p>
           <button 
             onClick={fetchAIReport}
             className="mt-6 flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow-md transition-all"
           >
-            <span>Run Analysis Now</span>
+            <span>Analyze Now</span>
           </button>
         </div>
       )}

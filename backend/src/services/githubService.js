@@ -38,14 +38,14 @@ const getRepositoriesList = async (token) => {
       per_page: 100 
     })
   );
-  return response.data.map(repo => ({
+  return Array.isArray(response.data) ? response.data.map(repo => ({
     id: repo.id,
     name: repo.name,
     owner: repo.owner.login,
     private: repo.private,
     description: repo.description,
     htmlUrl: repo.html_url
-  }));
+  })) : [];
 };
 
 /**
@@ -99,7 +99,7 @@ const getIssues = async (token, owner, repo) => {
   );
   
   // Note: GitHub API includes PRs in listIssues responses, we filter them out.
-  return response.data.filter(issue => !issue.pull_request);
+  return Array.isArray(response.data) ? response.data.filter(issue => !issue.pull_request) : [];
 };
 
 /**
@@ -120,7 +120,13 @@ const getContributorsStats = async (token, owner, repo) => {
     if (response.status === 202) {
       console.warn('[GitHub Service] Contributors stats are compiling (202 status). Retrying once...');
       await new Promise(resolve => setTimeout(resolve, 2000));
-      const retryResponse = await octokit.rest.repos.getContributorsStats({ owner, repo });
+      const retryResponse = await executeWithRetry(() =>
+        octokit.rest.repos.getContributorsStats({ owner, repo })
+      );
+      if (retryResponse.status === 202) {
+        console.warn('[GitHub Service] Contributors stats still compiling (202 status) after retry. Returning empty array.');
+        return [];
+      }
       return retryResponse.data || [];
     }
 
@@ -137,14 +143,14 @@ const getContributorsStats = async (token, owner, repo) => {
       })
     );
     
-    return fallbackList.data.map(c => ({
+    return Array.isArray(fallbackList.data) ? fallbackList.data.map(c => ({
       author: {
         login: c.login,
         avatar_url: c.avatar_url
       },
       total: c.contributions, // total commits
       weeks: []
-    }));
+    })) : [];
   }
 };
 
@@ -161,6 +167,21 @@ const getCodeFrequency = async (token, owner, repo) => {
         repo
       })
     );
+    
+    // GitHub may return 202 Accepted if stats are compiling. 
+    if (response.status === 202) {
+      console.warn('[GitHub Service] Code frequency stats are compiling (202 status). Retrying once...');
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      const retryResponse = await executeWithRetry(() =>
+        octokit.rest.repos.getCodeFrequencyStats({ owner, repo })
+      );
+      if (retryResponse.status === 202) {
+        console.warn('[GitHub Service] Code frequency stats still compiling (202 status) after retry. Returning empty array.');
+        return [];
+      }
+      return retryResponse.data || [];
+    }
+
     return response.data || []; // Returns arrays of [timestamp, additions, deletions]
   } catch (err) {
     console.error('[GitHub Service] Code frequency fetch failed:', err.message);

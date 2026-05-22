@@ -24,16 +24,16 @@ const getRepositoryMetrics = async (token, owner, repo) => {
     ]);
 
     // --- KPI & Summary Calculations ---
-    const totalCommits = rawCommits.length;
+    const totalCommits = Array.isArray(rawCommits) ? rawCommits.length : 0;
     
     // PR breakdown
-    const openPRs = rawPRs.filter(pr => pr.state === 'open').length;
-    const closedPRs = rawPRs.filter(pr => pr.state === 'closed' && !pr.merged_at).length;
-    const mergedPRs = rawPRs.filter(pr => pr.merged_at).length;
+    const openPRs = (Array.isArray(rawPRs) ? rawPRs.filter(pr => pr.state === 'open') : []).length;
+    const closedPRs = (Array.isArray(rawPRs) ? rawPRs.filter(pr => pr.state === 'closed' && !pr.merged_at) : []).length;
+    const mergedPRs = (Array.isArray(rawPRs) ? rawPRs.filter(pr => pr.merged_at) : []).length;
 
     // Issue breakdown
-    const openIssues = rawIssues.filter(issue => issue.state === 'open').length;
-    const closedIssues = rawIssues.filter(issue => issue.state === 'closed').length;
+    const openIssues = (Array.isArray(rawIssues) ? rawIssues.filter(issue => issue.state === 'open') : []).length;
+    const closedIssues = (Array.isArray(rawIssues) ? rawIssues.filter(issue => issue.state === 'closed') : []).length;
 
     // Churn calculations (from code frequency over the last 12 weeks / approx 90 days)
     let additions = 0;
@@ -42,7 +42,7 @@ const getRepositoryMetrics = async (token, owner, repo) => {
     const codeChurnChart = [];
     // rawCodeFrequency is an array of [timestamp, additions, deletions]
     // Filter to last 12 entries (approx 90 days) or all if less
-    const recentFrequency = rawCodeFrequency.slice(-12);
+    const recentFrequency = Array.isArray(rawCodeFrequency) ? rawCodeFrequency.slice(-12) : [];
     
     recentFrequency.forEach(([timestamp, add, del]) => {
       const dateStr = new Date(timestamp * 1000).toISOString().split('T')[0];
@@ -73,14 +73,16 @@ const getRepositoryMetrics = async (token, owner, repo) => {
     }
 
     // Populate actual commits
-    rawCommits.forEach(c => {
-      if (c.commit && c.commit.author && c.commit.author.date) {
-        const dateKey = c.commit.author.date.split('T')[0];
-        if (dateMap[dateKey] !== undefined) {
-          dateMap[dateKey]++;
+    if (Array.isArray(rawCommits)) {
+      rawCommits.forEach(c => {
+        if (c.commit && c.commit.author && c.commit.author.date) {
+          const dateKey = c.commit.author.date.split('T')[0];
+          if (dateMap[dateKey] !== undefined) {
+            dateMap[dateKey]++;
+          }
         }
-      }
-    });
+      });
+    }
 
     // Convert date map to sorted array
     Object.keys(dateMap).sort().forEach(date => {
@@ -104,18 +106,20 @@ const getRepositoryMetrics = async (token, owner, repo) => {
       let openCount = 0;
       let closedCount = 0;
 
-      rawIssues.forEach(issue => {
-        const createdDate = new Date(issue.created_at);
-        const closedDate = issue.closed_at ? new Date(issue.closed_at) : null;
+      if (Array.isArray(rawIssues)) {
+        rawIssues.forEach(issue => {
+          const createdDate = new Date(issue.created_at);
+          const closedDate = issue.closed_at ? new Date(issue.closed_at) : null;
 
-        if (createdDate <= date) {
-          if (!closedDate || closedDate > date) {
-            openCount++;
-          } else {
-            closedCount++;
+          if (createdDate <= date) {
+            if (!closedDate || closedDate > date) {
+              openCount++;
+            } else {
+              closedCount++;
+            }
           }
-        }
-      });
+        });
+      }
 
       issuesTrend.push({
         date: date.toISOString().split('T')[0],
@@ -126,7 +130,7 @@ const getRepositoryMetrics = async (token, owner, repo) => {
 
     // C. Contributor leaderboard
     // Map rawContributors: [{ author: { login, avatar_url }, total, weeks: [] }]
-    const contributors = rawContributors.map(c => {
+    const contributors = Array.isArray(rawContributors) ? rawContributors.map(c => {
       let contribAdds = 0;
       let contribDels = 0;
 
@@ -144,13 +148,15 @@ const getRepositoryMetrics = async (token, owner, repo) => {
         additions: contribAdds,
         deletions: contribDels
       };
-    });
+    }) : [];
 
     // Compile recent commit details (message and author) for AI analysis input
-    const recentCommits = rawCommits.slice(0, 30).map(c => ({
-      author: c.commit?.author?.name || c.commit?.author?.email || 'Unknown',
-      message: c.commit?.message || ''
-    }));
+    const recentCommits = Array.isArray(rawCommits) 
+      ? rawCommits.slice(0, 30).map(c => ({
+          author: c.commit?.author?.name || c.commit?.author?.email || 'Unknown',
+          message: c.commit?.message || ''
+        }))
+      : [];
 
     return {
       summary: {

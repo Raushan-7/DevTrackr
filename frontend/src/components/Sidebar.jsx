@@ -58,7 +58,7 @@ const Sidebar = () => {
           DevTrackr Dashboard
         </h5>
         <p className="text-[10px] text-slate-450 dark:text-slate-500 mt-1">
-          Increase delivery velocity with AI performance analysis.
+          Turn your GitHub activity into actionable team insights.
         </p>
       </div>
     </aside>

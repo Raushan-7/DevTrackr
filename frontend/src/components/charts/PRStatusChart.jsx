@@ -24,8 +24,9 @@ const PRStatusChart = ({ data = {} }) => {
 
   if (total === 0) {
     return (
-      <div className="flex h-64 items-center justify-center text-slate-400 text-sm">
-        No Pull Request data available
+      <div className="flex h-64 flex-col items-center justify-center text-slate-450 dark:text-slate-500 text-sm gap-2 text-center">
+        <span className="text-3xl">🔀</span>
+        <span>No Pull Request data available.</span>
       </div>
     );
   }

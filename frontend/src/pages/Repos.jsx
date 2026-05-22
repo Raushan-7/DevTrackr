@@ -151,14 +151,14 @@ const Repos = () => {
         <div className="flex h-96 flex-col items-center justify-center p-8 text-center glass-card">
           <GitFork size={40} className="text-slate-400 dark:text-slate-500 mb-4" />
           <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300">No repositories found</h3>
-          <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 max-w-md">
-            If you just updated your GitHub PAT, click below to refetch repositories.
+          <p className="text-sm text-slate-500 dark:text-slate-450 mt-2 max-w-md">
+            No repositories found. Add your GitHub PAT in Settings to get started.
           </p>
           <button 
-            onClick={() => refetch()}
+            onClick={() => navigate('/settings')}
             className="mt-6 flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow-md transition-all"
           >
-            <span>Refresh Repositories</span>
+            <span>Go to Settings</span>
           </button>
         </div>
       )}

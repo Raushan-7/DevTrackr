@@ -18,8 +18,9 @@ const CustomTooltip = ({ active, payload, label }) => {
 const CommitActivityChart = ({ data = [] }) => {
   if (!data || data.length === 0) {
     return (
-      <div className="flex h-64 items-center justify-center text-slate-400 text-sm">
-        No commit activity data available
+      <div className="flex h-64 flex-col items-center justify-center text-slate-450 dark:text-slate-500 text-sm gap-2 text-center">
+        <span className="text-3xl">📊</span>
+        <span>No commit activity data available.</span>
       </div>
     );
   }
