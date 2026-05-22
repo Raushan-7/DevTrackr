@@ -53,14 +53,14 @@ const Repos = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search repositories..."
-            className="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
+            className="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
           />
         </div>
       </div>
 
       {/* Main repo list grid */}
       {error ? (
-        <div className="p-5 rounded-2xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/50 text-rose-800 dark:text-rose-450 flex items-center gap-3">
+        <div className="p-5 rounded-2xl bg-red-50 dark:bg-rose-950/20 border border-red-200 dark:border-rose-900/50 text-red-700 dark:text-rose-450 flex items-center gap-3">
           <AlertTriangle className="shrink-0" />
           <div className="text-sm">
             <h4 className="font-bold">Failed to load repositories</h4>
@@ -106,8 +106,8 @@ const Repos = () => {
 
                     <div className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${
                       repo.private 
-                        ? 'bg-amber-50 text-amber-700 border-amber-200/50 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/50' 
-                        : 'bg-emerald-50 text-emerald-700 border-emerald-200/50 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/50'
+                        ? 'bg-yellow-100 text-yellow-700 border-yellow-200/50 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/50' 
+                        : 'bg-green-100 text-green-700 border-green-200/50 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/50'
                     }`}>
                       {repo.private ? <Lock size={10} /> : <Unlock size={10} />}
                       <span>{repo.private ? 'Private' : 'Public'}</span>

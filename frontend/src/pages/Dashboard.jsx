@@ -114,7 +114,7 @@ const Dashboard = () => {
     <div className="flex-1 p-6 md:p-8 space-y-8 overflow-y-auto max-h-[calc(100vh-64px)]">
       
       {showBanner && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 rounded-xl bg-amber-50 border border-amber-250 text-amber-800 dark:bg-amber-950/20 dark:border-amber-900/50 dark:text-amber-400 text-xs font-semibold shadow-sm">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 rounded-xl bg-yellow-100 border border-yellow-250 text-yellow-700 dark:bg-amber-950/20 dark:border-amber-900/50 dark:text-amber-400 text-xs font-semibold shadow-sm">
           <div className="flex items-center gap-2">
             <span className="text-base">⚠️</span>
             <span>AI features are limited today due to API quota. Add your Gemini key in Settings to unlock full insights.</span>
@@ -154,7 +154,7 @@ const Dashboard = () => {
             <select
               value={selectedRepo?.id || ''}
               onChange={handleRepoChange}
-              className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-800 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-semibold cursor-pointer shadow-sm"
+              className="px-4 py-2 rounded-xl border border-gray-300 bg-white text-gray-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-semibold cursor-pointer shadow-sm"
             >
               {repos.map((repo) => (
                 <option key={repo.id} value={repo.id}>
@@ -187,7 +187,7 @@ const Dashboard = () => {
 
       {/* Main content grid */}
       {statsError ? (
-        <div className="p-5 rounded-2xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/50 text-rose-800 dark:text-rose-450 flex items-center gap-3">
+        <div className="p-5 rounded-2xl bg-red-50 dark:bg-rose-950/20 border border-red-200 dark:border-rose-900/50 text-red-700 dark:text-rose-450 flex items-center gap-3">
           <AlertCircle className="shrink-0" />
           <div className="text-sm">
             <h4 className="font-bold">Failed to load statistics</h4>

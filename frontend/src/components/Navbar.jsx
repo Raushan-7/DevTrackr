@@ -44,7 +44,7 @@ const Navbar = () => {
       <div className="flex h-16 items-center justify-between px-6">
         
         {/* Brand Logo */}
-        <Link to="/" className="flex items-center gap-2 group">
+        <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2 group">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform duration-200">
             <Award className="h-5 w-5" />
           </div>

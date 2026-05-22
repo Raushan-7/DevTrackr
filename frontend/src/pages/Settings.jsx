@@ -124,7 +124,7 @@ const Settings = () => {
 
             {/* Banners */}
             {error && (
-              <div className="flex items-start gap-2.5 p-3.5 mb-5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 dark:bg-rose-950/20 dark:border-rose-900/50 dark:text-rose-450 text-xs font-semibold">
+              <div className="flex items-start gap-2.5 p-3.5 mb-5 rounded-xl bg-red-50 border border-red-200 text-red-700 dark:bg-rose-950/20 dark:border-rose-900/50 dark:text-rose-450 text-xs font-semibold">
                 <AlertTriangle size={16} className="shrink-0 mt-0.5" />
                 <span>{error}</span>
               </div>
@@ -163,7 +163,7 @@ const Settings = () => {
                     value={token}
                     onChange={(e) => setToken(e.target.value)}
                     placeholder={user?.hasGithubToken ? '••••••••••••••••••••••••••••••••••••••••' : 'ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'}
-                    className="w-full pl-11 pr-11 py-3 rounded-xl border border-slate-200/80 bg-white/50 text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 focus:outline-none dark:border-slate-800 dark:bg-slate-900/55 dark:text-slate-100 transition-all text-sm"
+                    className="w-full pl-11 pr-11 py-3 rounded-xl border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 focus:outline-none dark:border-slate-800 dark:bg-slate-900/55 dark:text-slate-100 transition-all text-sm"
                     required
                   />
                   <button
@@ -204,7 +204,7 @@ const Settings = () => {
 
             {/* Banners */}
             {geminiError && (
-              <div className="flex items-start gap-2.5 p-3.5 mb-5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 dark:bg-rose-950/20 dark:border-rose-900/50 dark:text-rose-450 text-xs font-semibold">
+              <div className="flex items-start gap-2.5 p-3.5 mb-5 rounded-xl bg-red-50 border border-red-200 text-red-700 dark:bg-rose-950/20 dark:border-rose-900/50 dark:text-rose-450 text-xs font-semibold">
                 <AlertTriangle size={16} className="shrink-0 mt-0.5" />
                 <span>{geminiError}</span>
               </div>
@@ -219,7 +219,7 @@ const Settings = () => {
 
             {/* Status Badges */}
             {user?.hasGeminiKey ? (
-              <div className="flex items-center gap-3 p-4 mb-6 rounded-xl bg-emerald-50/50 border border-emerald-150 text-emerald-800 dark:bg-emerald-950/10 dark:border-emerald-900/40 dark:text-emerald-450">
+              <div className="flex items-center gap-3 p-4 mb-6 rounded-xl bg-green-100 border border-green-200 text-green-700 dark:bg-emerald-950/10 dark:border-emerald-900/40 dark:text-emerald-450">
                 <CheckCircle2 className="shrink-0 text-emerald-600 dark:text-emerald-400" size={20} />
                 <div className="text-xs font-semibold">
                   <h5 className="font-bold">✅ Using your personal Gemini key</h5>
@@ -229,7 +229,7 @@ const Settings = () => {
                 </div>
               </div>
             ) : serverKeyFailed ? (
-              <div className="flex items-center gap-3 p-4 mb-6 rounded-xl bg-amber-50 border border-amber-250 text-amber-800 dark:bg-amber-950/10 dark:border-amber-900/40 dark:text-amber-400">
+              <div className="flex items-center gap-3 p-4 mb-6 rounded-xl bg-yellow-100 border border-yellow-250 text-yellow-700 dark:bg-amber-950/10 dark:border-amber-900/40 dark:text-amber-400">
                 <AlertTriangle className="shrink-0 text-amber-600 dark:text-amber-400" size={20} />
                 <div className="text-xs font-semibold">
                   <h5 className="font-bold">⚠️ Server key unavailable — add your own key below</h5>
@@ -239,12 +239,12 @@ const Settings = () => {
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-3 p-4 mb-6 rounded-xl bg-emerald-50/50 border border-emerald-150 text-emerald-850 dark:bg-emerald-950/10 dark:border-emerald-900/40 dark:text-emerald-400">
+              <div className="flex items-center gap-3 p-4 mb-6 rounded-xl bg-green-100 border border-green-200 text-green-700 dark:bg-emerald-950/10 dark:border-emerald-900/40 dark:text-emerald-400">
                 <CheckCircle2 className="shrink-0 text-emerald-600 dark:text-emerald-400" size={20} />
                 <div className="text-xs font-semibold">
                   <h5 className="font-bold">✅ Using server key</h5>
                   <p className="mt-0.5 opacity-90">
-                    Using the default server-wide Gemini API key. No personal key configured.
+                     Using the default server-wide Gemini API key. No personal key configured.
                   </p>
                 </div>
               </div>
@@ -264,7 +264,7 @@ const Settings = () => {
                     value={geminiKey}
                     onChange={(e) => setGeminiKey(e.target.value)}
                     placeholder={user?.hasGeminiKey ? '••••••••••••••••••••••••••••••••••••••••' : 'AIzaSyxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'}
-                    className="w-full pl-11 pr-11 py-3 rounded-xl border border-slate-200/80 bg-white/50 text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 focus:outline-none dark:border-slate-800 dark:bg-slate-900/55 dark:text-slate-100 transition-all text-sm"
+                    className="w-full pl-11 pr-11 py-3 rounded-xl border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 focus:outline-none dark:border-slate-800 dark:bg-slate-900/55 dark:text-slate-100 transition-all text-sm"
                     required={!user?.hasGeminiKey}
                   />
                   <button
@@ -308,7 +308,7 @@ const Settings = () => {
                     type="button"
                     onClick={handleRemoveGeminiKey}
                     disabled={geminiLoading}
-                    className="flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 active:scale-[0.98] disabled:opacity-75 disabled:pointer-events-none font-semibold rounded-xl text-sm transition-all"
+                    className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-750 dark:text-slate-200 active:scale-[0.98] disabled:opacity-75 disabled:pointer-events-none font-semibold rounded-xl text-sm transition-all"
                   >
                     <span>Remove Key</span>
                   </button>

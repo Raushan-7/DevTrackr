@@ -39,6 +39,10 @@ const ContributorLeaderboard = ({ data = [] }) => {
     .sort((a, b) => b.commits - a.commits)
     .slice(0, 5);
 
+  const isDark = document.documentElement.classList.contains('dark');
+  const tickColor = isDark ? '#9ca3af' : '#374151';
+  const gridColor = isDark ? '#374151' : '#e5e7eb';
+
   const colors = ['#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#d946ef'];
 
   return (
@@ -49,10 +53,10 @@ const ContributorLeaderboard = ({ data = [] }) => {
           layout="vertical"
           margin={{ top: 10, right: 10, left: 10, bottom: 5 }}
         >
-          <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" className="dark:stroke-slate-800" />
+          <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={gridColor} />
           <XAxis 
             type="number" 
-            tick={{ fill: '#94a3b8', fontSize: 11 }}
+            tick={{ fill: tickColor, fontSize: 11 }}
             tickLine={false}
             axisLine={false}
             allowDecimals={false}
@@ -60,7 +64,7 @@ const ContributorLeaderboard = ({ data = [] }) => {
           <YAxis 
             dataKey="username" 
             type="category" 
-            tick={{ fill: '#475569', fontSize: 11, fontWeight: 600 }}
+            tick={{ fill: tickColor, fontSize: 11, fontWeight: 600 }}
             tickLine={false}
             axisLine={false}
             width={85}

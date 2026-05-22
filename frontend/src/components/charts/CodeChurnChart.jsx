@@ -30,6 +30,10 @@ const CodeChurnChart = ({ data = [] }) => {
     );
   }
 
+  const isDark = document.documentElement.classList.contains('dark');
+  const tickColor = isDark ? '#9ca3af' : '#374151';
+  const gridColor = isDark ? '#374151' : '#e5e7eb';
+
   const formattedData = data.map(item => ({
     ...item,
     formattedDate: new Date(item.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
@@ -49,15 +53,15 @@ const CodeChurnChart = ({ data = [] }) => {
               <stop offset="95%" stopColor="#ef4444" stopOpacity={0.01}/>
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-800" />
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridColor} />
           <XAxis 
             dataKey="formattedDate" 
-            tick={{ fill: '#94a3b8', fontSize: 11 }}
+            tick={{ fill: tickColor, fontSize: 11 }}
             tickLine={false}
             axisLine={false}
           />
           <YAxis 
-            tick={{ fill: '#94a3b8', fontSize: 11 }}
+            tick={{ fill: tickColor, fontSize: 11 }}
             tickLine={false}
             axisLine={false}
           />

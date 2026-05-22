@@ -139,7 +139,7 @@ const AIInsights = () => {
         error.response?.status === 402 || error.response?.data?.requiresUserKey ? (
           <GeminiKeyPrompt onKeySaved={fetchAIReport} />
         ) : (
-          <div className="p-5 rounded-2xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/50 text-rose-800 dark:text-rose-450 flex items-center gap-3">
+          <div className="p-5 rounded-2xl bg-red-50 dark:bg-rose-950/20 border border-red-200 dark:border-rose-900/50 text-red-700 dark:text-rose-450 flex items-center gap-3">
             <AlertTriangle className="shrink-0" />
             <div className="text-sm">
               <h4 className="font-bold">Failed to generate AI sprint report</h4>
@@ -232,10 +232,10 @@ const AIInsights = () => {
                           <td className="px-4 py-3.5 text-center">
                             <span className={`inline-block px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wide text-[10px] ${
                               isHigh 
-                                ? 'bg-rose-50 text-rose-700 border border-rose-200/50 dark:bg-rose-950/20 dark:text-rose-450 dark:border-rose-900/50' 
+                                ? 'bg-red-100 text-red-700 border border-red-200 dark:bg-rose-950/20 dark:text-rose-450 dark:border-rose-900/50' 
                                 : isMed 
-                                ? 'bg-amber-50 text-amber-700 border border-amber-200/50 dark:bg-amber-950/20 dark:text-amber-450 dark:border-amber-900/50' 
-                                : 'bg-blue-50 text-blue-700 border border-blue-200/50 dark:bg-blue-950/20 dark:text-blue-450 dark:border-blue-900/50'
+                                ? 'bg-yellow-100 text-yellow-700 border border-yellow-200 dark:bg-amber-950/20 dark:text-amber-450 dark:border-amber-900/50' 
+                                : 'bg-green-100 text-green-700 border border-green-200 dark:bg-blue-950/20 dark:text-blue-450 dark:border-blue-900/50'
                             }`}>
                               {item.priority}
                             </span>

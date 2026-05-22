@@ -11,6 +11,7 @@ import Dashboard from './pages/Dashboard';
 import Repos from './pages/Repos';
 import AIInsights from './pages/AIInsights';
 import Settings from './pages/Settings';
+import Landing from './pages/Landing';
 import { Loader2 } from 'lucide-react';
 
 const queryClient = new QueryClient({
@@ -61,7 +62,7 @@ const PublicRoute = ({ children }) => {
   if (loading) return null;
 
   if (user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return children;
@@ -74,6 +75,9 @@ function App() {
         <AuthProvider>
           <Routes>
             
+            {/* Public Landing Route */}
+            <Route path="/" element={<Landing />} />
+
             {/* Public Auth Routes */}
             <Route 
               path="/login" 
@@ -94,7 +98,7 @@ function App() {
 
             {/* Protected Application Routes */}
             <Route element={<ProtectedLayout />}>
-              <Route path="/" element={<Dashboard />} />
+              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/repos" element={<Repos />} />
               <Route path="/insights" element={<AIInsights />} />
               <Route path="/settings" element={<Settings />} />

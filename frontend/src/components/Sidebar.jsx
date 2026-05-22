@@ -6,18 +6,18 @@ const Sidebar = () => {
   const location = useLocation();
 
   const links = [
-    { name: 'Dashboard', path: '/', icon: LayoutDashboard },
+    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Repositories', path: '/repos', icon: GitFork },
     { name: 'AI Insights', path: '/insights', icon: Sparkles },
     { name: 'Settings', path: '/settings', icon: SettingsIcon },
   ];
 
   return (
-    <aside className="w-64 border-r border-slate-200/80 bg-white/50 dark:border-slate-800/80 dark:bg-slate-950/20 px-4 py-6 hidden md:flex flex-col justify-between h-[calc(100vh-64px)] sticky top-16">
+    <aside className="w-64 border-r border-gray-200 bg-white dark:border-slate-800/80 dark:bg-slate-950/20 px-4 py-6 hidden md:flex flex-col justify-between h-[calc(100vh-64px)] sticky top-16">
       <div className="flex flex-col gap-6">
         
         {/* Section label */}
-        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-3">
+        <span className="text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-widest px-3">
           Navigation
         </span>
 
@@ -34,15 +34,15 @@ const Sidebar = () => {
                 className={({ isActive }) => 
                   `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 group ${
                     isActive
-                      ? 'bg-blue-600 text-white shadow-md shadow-blue-500/10 dark:bg-blue-600 dark:text-white'
-                      : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-900/50 hover:text-slate-800 dark:hover:text-slate-200'
+                      ? 'bg-blue-50 text-blue-600 dark:bg-blue-600 dark:text-white shadow-none dark:shadow-md dark:shadow-blue-500/10'
+                      : 'text-gray-700 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-900/50 hover:text-gray-900 dark:hover:text-slate-200'
                   }`
                 }
               >
                 <Icon 
                   size={18} 
                   className={`transition-transform duration-200 group-hover:scale-105 ${
-                    isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-650 dark:group-hover:text-slate-200'
+                    isActive ? 'text-blue-600 dark:text-white' : 'text-gray-400 group-hover:text-gray-600 dark:text-slate-500 dark:group-hover:text-slate-200'
                   }`} 
                 />
                 <span>{link.name}</span>
