@@ -3,12 +3,14 @@ import api from '../services/api';
 
 const AuthContext = createContext(null);
 
+const tokenKey = `${(import.meta.env.VITE_APP_NAME || 'devtrackr').toLowerCase()}_token`;
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const fetchCurrentUser = async () => {
-    const token = localStorage.getItem('devtrackr_token');
+    const token = localStorage.getItem(tokenKey);
     if (!token) {
       setUser(null);
       setLoading(false);
@@ -20,7 +22,7 @@ export const AuthProvider = ({ children }) => {
       setUser(response.data);
     } catch (err) {
       console.error('Failed to load user session:', err);
-      localStorage.removeItem('devtrackr_token');
+      localStorage.removeItem(tokenKey);
       setUser(null);
     } finally {
       setLoading(false);
@@ -45,7 +47,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await api.post('/auth/login', { email, password });
       const { token, user: userData } = response.data;
-      localStorage.setItem('devtrackr_token', token);
+      localStorage.setItem(tokenKey, token);
       setUser(userData);
       // Immediately reload detailed info to fetch github connection status
       await fetchCurrentUser();
@@ -62,7 +64,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await api.post('/auth/signup', { name, email, password });
       const { token, user: userData } = response.data;
-      localStorage.setItem('devtrackr_token', token);
+      localStorage.setItem(tokenKey, token);
       setUser(userData);
       await fetchCurrentUser();
       return userData;
@@ -74,9 +76,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('devtrackr_token');
+    localStorage.removeItem(tokenKey);
     setUser(null);
   };
+
+  const [serverKeyFailed, setServerKeyFailed] = useState(false);
 
   const updateGithubToken = async (token) => {
     try {
@@ -88,6 +92,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateGeminiKey = async (key) => {
+    try {
+      const response = await api.post('/auth/gemini-key', { key });
+      await fetchCurrentUser();
+      return response.data;
+    } catch (err) {
+      throw err.response?.data?.message || 'Failed to update Gemini API key.';
+    }
+  };
+
   const value = {
     user,
     loading,
@@ -95,6 +109,9 @@ export const AuthProvider = ({ children }) => {
     signup,
     logout,
     updateGithubToken,
+    updateGeminiKey,
+    serverKeyFailed,
+    setServerKeyFailed,
     refreshUser: fetchCurrentUser,
   };
 

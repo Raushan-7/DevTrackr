@@ -21,6 +21,7 @@ const formatUser = (user) => ({
   email: user.email,
   githubUsername: user.githubUsername,
   hasGithubToken: !!user.githubToken,
+  hasGeminiKey: !!user.geminiKey,
 });
 
 /**
@@ -136,6 +137,38 @@ router.post('/github-token', protect, async (req, res, next) => {
     return res.json({
       message: 'GitHub Personal Access Token updated and verified successfully.',
       githubUsername: githubProfile.login,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * @route   POST /api/auth/gemini-key
+ * @desc    Submit/update personal Gemini API key
+ * @access  Private
+ */
+router.post('/gemini-key', protect, async (req, res, next) => {
+  const { key } = req.body;
+
+  try {
+    if (key === '' || key === null || key === undefined) {
+      req.user.geminiKey = null;
+      await req.user.save();
+      return res.json({
+        message: 'Personal Gemini API key removed successfully.',
+      });
+    }
+
+    // Encrypt token using aes-256-cbc
+    const encryptedKey = encrypt(key);
+
+    // Save to database
+    req.user.geminiKey = encryptedKey;
+    await req.user.save();
+
+    return res.json({
+      message: 'Gemini API key updated and encrypted successfully.',
     });
   } catch (err) {
     next(err);

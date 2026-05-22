@@ -7,8 +7,12 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
  * Analyzes repository metrics and recent activity to generate a structured AI sprint report.
  * Uses Gemini structured JSON output matching the expected frontend structure.
  */
-const generateAnalysisReport = async (owner, repo, statsData) => {
+const generateAnalysisReport = async (owner, repo, statsData, userGeminiKey = null) => {
   try {
+    const apiKey = userGeminiKey || process.env.GEMINI_API_KEY;
+    const client = new GoogleGenerativeAI(apiKey);
+    const model = client.getGenerativeModel({ model: "gemini-2.5-flash" });
+
     const responseSchema = {
       type: 'object',
       properties: {
@@ -88,8 +92,8 @@ const generateAnalysisReport = async (owner, repo, statsData) => {
         }
       ],
       generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 2048,
+        temperature: 0.4,
+        maxOutputTokens: 8192,
         responseMimeType: 'application/json',
         responseSchema: responseSchema,
       }
@@ -115,11 +119,15 @@ const generateAnalysisReport = async (owner, repo, statsData) => {
 /**
  * Generates a release notes/changelog summary from a list of commit messages.
  */
-const summarizeCommits = async (commits) => {
+const summarizeCommits = async (commits, userGeminiKey = null) => {
   try {
     if (!commits || commits.length === 0) {
       return { summary: 'No commits to summarize.' };
     }
+
+    const apiKey = userGeminiKey || process.env.GEMINI_API_KEY;
+    const client = new GoogleGenerativeAI(apiKey);
+    const model = client.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const commitListText = commits.map(c => `- ${c}`).join('\n');
     const prompt = `

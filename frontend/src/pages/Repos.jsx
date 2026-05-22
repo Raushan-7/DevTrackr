@@ -4,6 +4,8 @@ import { useGitHubRepos } from '../hooks/useGitHub';
 import { useAnalyzeRepo } from '../hooks/useAI';
 import { GitFork, Search, Sparkles, Loader2, Lock, Unlock, AlertTriangle, ArrowRight, ExternalLink } from 'lucide-react';
 
+const repoKey = `${(import.meta.env.VITE_APP_NAME || 'devtrackr').toLowerCase()}_active_repo`;
+
 const Repos = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
@@ -12,7 +14,7 @@ const Repos = () => {
 
   const handleAnalyze = async (owner, repo) => {
     try {
-      localStorage.setItem('devtrackr_active_repo', JSON.stringify({ owner, name: repo }));
+      localStorage.setItem(repoKey, JSON.stringify({ owner, name: repo }));
       // Trigger the backend sync & analysis report generation
       await analyzeMutation.mutateAsync({ owner, repo });
       // Redirect to the insights view

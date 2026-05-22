@@ -20,12 +20,14 @@ import {
   UserCheck
 } from 'lucide-react';
 
+const repoKey = `${(import.meta.env.VITE_APP_NAME || 'devtrackr').toLowerCase()}_active_repo`;
+
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, serverKeyFailed } = useAuth();
   const { data: repos = [], isLoading: reposLoading, refetch: refetchRepos } = useGitHubRepos();
   
   const [selectedRepo, setSelectedRepo] = useState(() => {
-    const saved = localStorage.getItem('devtrackr_active_repo');
+    const saved = localStorage.getItem(repoKey);
     return saved ? JSON.parse(saved) : null;
   });
 
@@ -33,7 +35,7 @@ const Dashboard = () => {
     if (repos.length > 0 && !selectedRepo) {
       const defaultRepo = repos[0];
       setSelectedRepo(defaultRepo);
-      localStorage.setItem('devtrackr_active_repo', JSON.stringify(defaultRepo));
+      localStorage.setItem(repoKey, JSON.stringify(defaultRepo));
     }
   }, [repos, selectedRepo]);
 
@@ -48,12 +50,38 @@ const Dashboard = () => {
     refetch: refetchStats 
   } = useRepoStats(owner, repoName);
 
+  const [showBanner, setShowBanner] = useState(false);
+
+  useEffect(() => {
+    const isFailed = serverKeyFailed || statsError?.response?.status === 402 || statsError?.response?.data?.requiresUserKey;
+    if (isFailed && !user?.hasGeminiKey) {
+      const dismissedTime = localStorage.getItem('gemini_banner_dismissed');
+      if (!dismissedTime) {
+        setShowBanner(true);
+      } else {
+        const timeDiff = Date.now() - parseInt(dismissedTime, 10);
+        if (timeDiff > 24 * 60 * 60 * 1000) {
+          setShowBanner(true);
+        } else {
+          setShowBanner(false);
+        }
+      }
+    } else {
+      setShowBanner(false);
+    }
+  }, [serverKeyFailed, statsError, user]);
+
+  const handleDismissBanner = () => {
+    localStorage.setItem('gemini_banner_dismissed', Date.now().toString());
+    setShowBanner(false);
+  };
+
   const handleRepoChange = (e) => {
     const repoId = parseInt(e.target.value);
     const repo = repos.find(r => r.id === repoId);
     if (repo) {
       setSelectedRepo(repo);
-      localStorage.setItem('devtrackr_active_repo', JSON.stringify(repo));
+      localStorage.setItem(repoKey, JSON.stringify(repo));
     }
   };
 
@@ -84,6 +112,29 @@ const Dashboard = () => {
 
   return (
     <div className="flex-1 p-6 md:p-8 space-y-8 overflow-y-auto max-h-[calc(100vh-64px)]">
+      
+      {showBanner && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 rounded-xl bg-amber-50 border border-amber-250 text-amber-800 dark:bg-amber-950/20 dark:border-amber-900/50 dark:text-amber-400 text-xs font-semibold shadow-sm">
+          <div className="flex items-center gap-2">
+            <span className="text-base">⚠️</span>
+            <span>AI features are limited today due to API quota. Add your Gemini key in Settings to unlock full insights.</span>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <Link 
+              to="/settings" 
+              className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 active:scale-[0.98] text-white font-semibold rounded-lg transition-all"
+            >
+              Go to Settings →
+            </Link>
+            <button 
+              onClick={handleDismissBanner}
+              className="px-3 py-1.5 border border-amber-300 hover:bg-amber-100 dark:border-amber-800 dark:hover:bg-amber-950/45 text-amber-700 dark:text-amber-350 font-semibold rounded-lg transition-all"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
       
       {/* Upper header controls */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200/50 dark:border-slate-800/50 pb-5">

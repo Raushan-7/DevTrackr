@@ -13,17 +13,23 @@ import {
   Flame,
   Award
 } from 'lucide-react';
+import useAuth from '../hooks/useAuth';
+import GeminiKeyPrompt from '../components/GeminiKeyPrompt';
+
+const repoKey = `${(import.meta.env.VITE_APP_NAME || 'devtrackr').toLowerCase()}_active_repo`;
+const tokenKey = `${(import.meta.env.VITE_APP_NAME || 'devtrackr').toLowerCase()}_token`;
 
 const AIInsights = () => {
+  const { setServerKeyFailed } = useAuth();
   const navigate = useNavigate();
   const [activeRepo, setActiveRepo] = useState(() => {
-    const saved = localStorage.getItem('devtrackr_active_repo');
+    const saved = localStorage.getItem(repoKey);
     return saved ? JSON.parse(saved) : null;
   });
 
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(null);
 
   const owner = activeRepo?.owner || '';
   const repo = activeRepo?.name || activeRepo?.repo || '';
@@ -31,12 +37,16 @@ const AIInsights = () => {
   const fetchAIReport = async () => {
     if (!owner || !repo) return;
     setLoading(true);
-    setError('');
+    setError(null);
     try {
       const response = await api.post('/ai/analyze', { owner, repo });
       setReport(response.data);
+      setServerKeyFailed(false);
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Failed to generate AI insights.');
+      setError(err);
+      if (err.response?.status === 402 || err.response?.data?.requiresUserKey) {
+        setServerKeyFailed(true);
+      }
     } finally {
       setLoading(false);
     }
@@ -50,7 +60,7 @@ const AIInsights = () => {
 
   const handleExportPDF = () => {
     if (!report) return;
-    const token = localStorage.getItem('devtrackr_token');
+    const token = localStorage.getItem(tokenKey);
     const reportId = report._id || report.id || 'demo';
     
     // We open it in a new window. To pass the auth token, we pass it as a query parameter.
@@ -126,13 +136,17 @@ const AIInsights = () => {
       </div>
 
       {error ? (
-        <div className="p-5 rounded-2xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/50 text-rose-800 dark:text-rose-450 flex items-center gap-3">
-          <AlertTriangle className="shrink-0" />
-          <div className="text-sm">
-            <h4 className="font-bold">Failed to generate AI sprint report</h4>
-            <p className="mt-0.5">{error}</p>
+        error.response?.status === 402 || error.response?.data?.requiresUserKey ? (
+          <GeminiKeyPrompt onKeySaved={fetchAIReport} />
+        ) : (
+          <div className="p-5 rounded-2xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/50 text-rose-800 dark:text-rose-450 flex items-center gap-3">
+            <AlertTriangle className="shrink-0" />
+            <div className="text-sm">
+              <h4 className="font-bold">Failed to generate AI sprint report</h4>
+              <p className="mt-0.5">{error.response?.data?.message || error.message || 'Failed to generate AI insights.'}</p>
+            </div>
           </div>
-        </div>
+        )
       ) : loading ? (
         <div className="flex flex-col items-center justify-center py-32 space-y-4">
           <Loader2 size={40} className="text-indigo-600 animate-spin stroke-[2.5]" />

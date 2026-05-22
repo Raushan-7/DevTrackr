@@ -19,12 +19,19 @@ const Github = (props) => (
 );
 
 const Settings = () => {
-  const { user, updateGithubToken } = useAuth();
+  const { user, updateGithubToken, updateGeminiKey, serverKeyFailed } = useAuth();
   const [token, setToken] = useState('');
   const [showToken, setShowToken] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Gemini state
+  const [geminiKey, setGeminiKey] = useState('');
+  const [showGeminiKey, setShowGeminiKey] = useState(false);
+  const [geminiLoading, setGeminiLoading] = useState(false);
+  const [geminiError, setGeminiError] = useState('');
+  const [geminiSuccess, setGeminiSuccess] = useState('');
 
   const handleUpdateToken = async (e) => {
     e.preventDefault();
@@ -45,6 +52,44 @@ const Settings = () => {
       setError(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleUpdateGeminiKey = async (e) => {
+    e.preventDefault();
+    if (!geminiKey) {
+      setGeminiError('Please provide a valid key.');
+      return;
+    }
+
+    setGeminiError('');
+    setGeminiSuccess('');
+    setGeminiLoading(true);
+
+    try {
+      await updateGeminiKey(geminiKey);
+      setGeminiSuccess('Gemini API key updated and encrypted successfully.');
+      setGeminiKey('');
+    } catch (err) {
+      setGeminiError(err);
+    } finally {
+      setGeminiLoading(false);
+    }
+  };
+
+  const handleRemoveGeminiKey = async () => {
+    setGeminiError('');
+    setGeminiSuccess('');
+    setGeminiLoading(true);
+
+    try {
+      await updateGeminiKey('');
+      setGeminiSuccess('Personal Gemini API key removed successfully.');
+      setGeminiKey('');
+    } catch (err) {
+      setGeminiError(err);
+    } finally {
+      setGeminiLoading(false);
     }
   };
 
@@ -145,6 +190,130 @@ const Settings = () => {
                   <span>Update GitHub Token</span>
                 )}
               </button>
+
+            </form>
+          </div>
+
+          {/* Gemini API Key Fallback Card */}
+          <div className="glass-card">
+            
+            <h3 className="text-base font-bold text-slate-850 dark:text-slate-150 mb-6 flex items-center gap-2">
+              <Key size={18} className="text-slate-700 dark:text-slate-350" />
+              <span>Gemini API Key Fallback</span>
+            </h3>
+
+            {/* Banners */}
+            {geminiError && (
+              <div className="flex items-start gap-2.5 p-3.5 mb-5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 dark:bg-rose-950/20 dark:border-rose-900/50 dark:text-rose-450 text-xs font-semibold">
+                <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+                <span>{geminiError}</span>
+              </div>
+            )}
+
+            {geminiSuccess && (
+              <div className="flex items-start gap-2.5 p-3.5 mb-5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 dark:bg-emerald-950/20 dark:border-emerald-900/50 dark:text-emerald-450 text-xs font-semibold">
+                <CheckCircle2 size={16} className="shrink-0 mt-0.5" />
+                <span>{geminiSuccess}</span>
+              </div>
+            )}
+
+            {/* Status Badges */}
+            {user?.hasGeminiKey ? (
+              <div className="flex items-center gap-3 p-4 mb-6 rounded-xl bg-emerald-50/50 border border-emerald-150 text-emerald-800 dark:bg-emerald-950/10 dark:border-emerald-900/40 dark:text-emerald-450">
+                <CheckCircle2 className="shrink-0 text-emerald-600 dark:text-emerald-400" size={20} />
+                <div className="text-xs font-semibold">
+                  <h5 className="font-bold">✅ Using your personal Gemini key</h5>
+                  <p className="mt-0.5 opacity-90">
+                    Your personal key is active. It will be used for AI insights instead of the server key.
+                  </p>
+                </div>
+              </div>
+            ) : serverKeyFailed ? (
+              <div className="flex items-center gap-3 p-4 mb-6 rounded-xl bg-amber-50 border border-amber-250 text-amber-800 dark:bg-amber-950/10 dark:border-amber-900/40 dark:text-amber-400">
+                <AlertTriangle className="shrink-0 text-amber-600 dark:text-amber-400" size={20} />
+                <div className="text-xs font-semibold">
+                  <h5 className="font-bold">⚠️ Server key unavailable — add your own key below</h5>
+                  <p className="mt-0.5 opacity-90">
+                    The server's Gemini API key has hit a quota or validation limit. Add your personal key to unlock full insights.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 p-4 mb-6 rounded-xl bg-emerald-50/50 border border-emerald-150 text-emerald-850 dark:bg-emerald-950/10 dark:border-emerald-900/40 dark:text-emerald-400">
+                <CheckCircle2 className="shrink-0 text-emerald-600 dark:text-emerald-400" size={20} />
+                <div className="text-xs font-semibold">
+                  <h5 className="font-bold">✅ Using server key</h5>
+                  <p className="mt-0.5 opacity-90">
+                    Using the default server-wide Gemini API key. No personal key configured.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <form onSubmit={handleUpdateGeminiKey} className="space-y-4">
+              
+              <div className="space-y-1.5 text-left">
+                <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  Gemini API Key
+                </label>
+                
+                <div className="relative">
+                  <Key className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <input
+                    type={showGeminiKey ? 'text' : 'password'}
+                    value={geminiKey}
+                    onChange={(e) => setGeminiKey(e.target.value)}
+                    placeholder={user?.hasGeminiKey ? '••••••••••••••••••••••••••••••••••••••••' : 'AIzaSyxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'}
+                    className="w-full pl-11 pr-11 py-3 rounded-xl border border-slate-200/80 bg-white/50 text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 focus:outline-none dark:border-slate-800 dark:bg-slate-900/55 dark:text-slate-100 transition-all text-sm"
+                    required={!user?.hasGeminiKey}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowGeminiKey(!showGeminiKey)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-650"
+                  >
+                    {showGeminiKey ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                <div className="pt-1">
+                  <a 
+                    href="https://aistudio.google.com/app/apikey" 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+                  >
+                    Get a free API key at aistudio.google.com &rarr;
+                  </a>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="submit"
+                  disabled={geminiLoading}
+                  className="flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] disabled:opacity-75 disabled:pointer-events-none text-white font-semibold rounded-xl text-sm transition-all shadow-md shadow-blue-500/10"
+                >
+                  {geminiLoading ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      <span>Saving Key...</span>
+                    </>
+                  ) : (
+                    <span>Save Gemini Key</span>
+                  )}
+                </button>
+
+                {user?.hasGeminiKey && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveGeminiKey}
+                    disabled={geminiLoading}
+                    className="flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 active:scale-[0.98] disabled:opacity-75 disabled:pointer-events-none font-semibold rounded-xl text-sm transition-all"
+                  >
+                    <span>Remove Key</span>
+                  </button>
+                )}
+              </div>
 
             </form>
           </div>

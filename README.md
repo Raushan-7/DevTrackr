@@ -19,6 +19,7 @@ This dashboard is designed to provide engineering leads and developers with deep
 - [Local Installation & Setup](#local-installation--setup)
 - [Seeding & Out-of-the-Box Demo](#seeding--out-of-the-box-demo)
 - [Docker Compose Deployment](#docker-compose-deployment)
+- [Deployment](#deployment)
 - [Frontend Pages & UI Components](#frontend-pages--ui-components)
 - [Verification Plan](#verification-plan)
 
@@ -558,6 +559,39 @@ The services will map as follows:
 - **MongoDB**: Internal container access
 - **Backend API**: `http://localhost:5000`
 - **Frontend Dashboard UI**: `http://localhost:5173`
+
+---
+
+## Deployment
+
+This section outlines the steps to deploy the DevTrackr application to production hosting services.
+
+### Backend (Render.com)
+
+1. Sign up/log in to [Render.com](https://render.com).
+2. Create a new **Web Service** and connect it to your DevTrackr repository.
+3. Configure the following build settings:
+   - **Build Command**: `npm install`
+   - **Start Command**: `node server.js`
+4. Set the following environment variables in the Render dashboard:
+   - `PORT`: The port on which the server runs (e.g., `5000`).
+   - `MONGODB_URI`: The MongoDB Atlas connection string (e.g., `mongodb+srv://...`).
+   - `JWT_SECRET`: A strong, unique key for signing JSON Web Tokens.
+   - `GEMINI_API_KEY`: Your Google Gemini AI API key.
+   - `GITHUB_ENCRYPTION_KEY`: A secure 32-byte (64-character hex) key for encrypting GitHub PATs.
+   - `CLIENT_URL`: The production URL of your frontend application (e.g., `https://your-frontend-domain.com`).
+   - `API_URL`: The production URL of your backend service (e.g., `https://your-backend-domain.com`).
+
+### Frontend (Vercel or Netlify)
+
+1. Sign up/log in to [Vercel](https://vercel.com) or [Netlify](https://www.netlify.com).
+2. Create a new project and import the DevTrackr repository.
+3. Configure the following build settings:
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+4. Set the following environment variables in the project settings dashboard:
+   - `VITE_API_BASE_URL`: The deployed backend API base URL (e.g., `https://your-backend-domain.com/api`).
+   - `VITE_APP_NAME`: The app name used for local storage keys (e.g., `DevTrackr`).
 
 ---
 

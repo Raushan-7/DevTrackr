@@ -23,7 +23,7 @@ if (missingEnvVars.length > 0) {
 }
 
 module.exports = {
-  PORT: process.env.PORT || 5000,
+  PORT: process.env.PORT,
   MONGODB_URI: process.env.MONGODB_URI,
   JWT_SECRET: process.env.JWT_SECRET,
   GEMINI_API_KEY: process.env.GEMINI_API_KEY,

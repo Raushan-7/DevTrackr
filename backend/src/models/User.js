@@ -27,6 +27,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: null,
   },
+  geminiKey: {
+    type: String, // Encrypted Gemini API key
+    default: null,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

@@ -4,6 +4,9 @@ node_modules/
 # Environment variables (contains sensitive API keys and secrets)
 .env
 .env.local
+.env.production
+dist/
+build/
 .env.development.local
 .env.test.local
 .env.production.local

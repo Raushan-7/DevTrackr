@@ -63,11 +63,42 @@ router.post('/analyze', protect, async (req, res, next) => {
     const token = getDecryptedToken(req.user, res);
     if (!token) return;
 
+    // 3. Request Gemini to analyze statistics
+    let userGeminiKey = null;
+    if (req.user.geminiKey) {
+      try {
+        userGeminiKey = decrypt(req.user.geminiKey);
+      } catch (err) {
+        console.error('Failed to decrypt user Gemini API key:', err.message);
+      }
+    }
+
     console.log(`[AI Route] Generating new report for ${owner}/${repo}...`);
     const statsData = await analyticsService.getRepositoryMetrics(token, owner, repo);
 
-    // 3. Request Gemini to analyze statistics
-    const analysisData = await aiService.generateAnalysisReport(owner, repo, statsData);
+    let analysisData;
+    try {
+      analysisData = await aiService.generateAnalysisReport(owner, repo, statsData, userGeminiKey);
+    } catch (error) {
+      const isQuotaError = 
+        error.message.includes('429') ||
+        error.message.includes('quota') ||
+        error.message.includes('API key not valid') ||
+        error.message.includes('RESOURCE_EXHAUSTED');
+
+      if (isQuotaError) {
+        return res.status(402).json({
+          error: 'API_KEY_FAILED',
+          message: 'The server Gemini API key has reached its limit or is invalid.',
+          requiresUserKey: true
+        });
+      }
+
+      return res.status(500).json({ 
+        error: 'AI_FAILED',
+        message: error.message 
+      });
+    }
 
     // 4. Save to database (6h TTL auto-deletes this later)
     const newReport = await AnalysisReport.create({
@@ -79,7 +110,7 @@ router.post('/analyze', protect, async (req, res, next) => {
 
     return res.json(formatReport(newReport));
   } catch (err) {
-    console.error(`[AI Route] Analysis generation failed:`, err.message);
+    console.error(`[AI Route] Request handling failed:`, err.message);
     return res.status(500).json({ 
       message: err.message || 'Failed to complete AI repository analysis.' 
     });
@@ -99,7 +130,39 @@ router.post('/summarize-commits', protect, async (req, res, next) => {
   }
 
   try {
-    const summary = await aiService.summarizeCommits(commits);
+    let userGeminiKey = null;
+    if (req.user.geminiKey) {
+      try {
+        userGeminiKey = decrypt(req.user.geminiKey);
+      } catch (err) {
+        console.error('Failed to decrypt user Gemini API key:', err.message);
+      }
+    }
+
+    let summary;
+    try {
+      summary = await aiService.summarizeCommits(commits, userGeminiKey);
+    } catch (error) {
+      const isQuotaError = 
+        error.message.includes('429') ||
+        error.message.includes('quota') ||
+        error.message.includes('API key not valid') ||
+        error.message.includes('RESOURCE_EXHAUSTED');
+
+      if (isQuotaError) {
+        return res.status(402).json({
+          error: 'API_KEY_FAILED',
+          message: 'The server Gemini API key has reached its limit or is invalid.',
+          requiresUserKey: true
+        });
+      }
+
+      return res.status(500).json({ 
+        error: 'AI_FAILED',
+        message: error.message 
+      });
+    }
+
     return res.json(summary);
   } catch (err) {
     console.error('[AI Route] Commit summarization failed:', err.message);
