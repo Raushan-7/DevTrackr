@@ -1,0 +1,142 @@
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+
+// Initialize Gemini SDK
+let genAI;
+const getAIInstance = () => {
+  if (!genAI) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error('GEMINI_API_KEY environment variable is not defined.');
+    }
+    genAI = new GoogleGenerativeAI(apiKey);
+  }
+  return genAI;
+};
+
+/**
+ * Analyzes repository metrics and recent activity to generate a structured AI sprint report.
+ * Uses Gemini structured JSON output matching the expected frontend structure.
+ */
+const generateAnalysisReport = async (owner, repo, statsData) => {
+  try {
+    const ai = getAIInstance();
+    // Use gemini-1.5-flash as the fast, reliable model for structured reports
+    const model = ai.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+    const prompt = `
+      You are an expert developer productivity advisor. Analyze the following developer metrics and recent history for the repository "${owner}/${repo}" over the last 90 days.
+      
+      METRICS SUMMARY:
+      - Total Commits: ${statsData.summary.totalCommits}
+      - Open Pull Requests: ${statsData.summary.openPRs}
+      - Open Issues: ${statsData.summary.openIssues}
+      - Closed Issues: ${statsData.summary.closedIssues}
+      - Lines Added: ${statsData.summary.additions}
+      - Lines Deleted: ${statsData.summary.deletions}
+      
+      CONTRIBUTOR LEADERBOARD:
+      ${statsData.contributors.map(c => `- ${c.username}: ${c.commits} commits, +${c.additions} lines, -${c.deletions} lines`).join('\n')}
+      
+      RECENT COMMITS:
+      ${statsData.recentCommits ? statsData.recentCommits.map(c => `- [${c.author}] ${c.message}`).slice(0, 30).join('\n') : 'No recent commit details provided.'}
+
+      Based on this data:
+      1. Write a cohesive, insightful 3-4 sentence "sprintSummary" that highlights velocity, major activity focus, and team coordination.
+      2. Compute a "gaugeScore" (integer 0-100) representing team productivity health.
+         - 80-100: Stable and high velocity, low open PR latency, good issue closure rate.
+         - 60-79: Normal velocity with minor bottlenecks or backlog creep.
+         - Under 60: Blocked PRs, excessive code churn with few completions, or stagnant issue backlogs.
+      3. Identify 1 to 3 "bottlenecks" containing:
+         - "badge": A short 1-3 word keyword (e.g. "PR Review Delay", "High Churn Rate", "Stale Backlog").
+         - "description": A concise explanation of the block and what metric signals it.
+      4. Suggest a "priorityBoard" listing 2 to 5 actionable tasks for the upcoming cycle:
+         - "task": The action description.
+         - "priority": Urgency level ("high", "medium", or "low").
+      5. Provide 2 to 4 high-level strategic "recommendations" (strings) for team workflow optimization.
+    `;
+
+    const responseSchema = {
+      type: 'object',
+      properties: {
+        sprintSummary: { type: 'string' },
+        gaugeScore: { type: 'integer' },
+        bottlenecks: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              badge: { type: 'string' },
+              description: { type: 'string' }
+            },
+            required: ['badge', 'description']
+          }
+        },
+        priorityBoard: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              task: { type: 'string' },
+              priority: { type: 'string' }
+            },
+            required: ['task', 'priority']
+          }
+        },
+        recommendations: {
+          type: 'array',
+          items: { type: 'string' }
+        }
+      },
+      required: ['sprintSummary', 'gaugeScore', 'bottlenecks', 'priorityBoard', 'recommendations']
+    };
+
+    const result = await model.generateContent({
+      contents: prompt,
+      generationConfig: {
+        responseMimeType: 'application/json',
+        responseSchema: responseSchema,
+      }
+    });
+
+    const responseText = result.response.text();
+    return JSON.parse(responseText);
+  } catch (error) {
+    console.error('[AI Service] Analysis generation failed:', error.message);
+    throw new Error(`Gemini AI analysis failed: ${error.message}`);
+  }
+};
+
+/**
+ * Generates a release notes/changelog summary from a list of commit messages.
+ */
+const summarizeCommits = async (commits) => {
+  try {
+    const ai = getAIInstance();
+    const model = ai.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+    if (!commits || commits.length === 0) {
+      return { summary: 'No commits to summarize.' };
+    }
+
+    const commitListText = commits.map(c => `- ${c}`).join('\n');
+    const prompt = `
+      Please summarize the following batch of code commit messages into a concise changelog / release notes summary.
+      Categorize changes into logical sections (e.g. Features, Bug Fixes, Refactoring, Documentation) if applicable.
+      Keep it readable, bulleted, and professional.
+
+      COMMITS:
+      ${commitListText}
+    `;
+
+    const result = await model.generateContent(prompt);
+    return { summary: result.response.text() };
+  } catch (error) {
+    console.error('[AI Service] Commit summarization failed:', error.message);
+    throw new Error(`Gemini commit summarization failed: ${error.message}`);
+  }
+};
+
+module.exports = {
+  generateAnalysisReport,
+  summarizeCommits
+};
