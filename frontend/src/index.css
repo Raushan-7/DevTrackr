@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 transition-colors duration-200;
+  }
+  
+  body.dark {
+    @apply bg-slate-950 text-slate-50;
+  }
+}
+
+/* Glassmorphism style cards */
+.glass-card {
+  @apply bg-white/70 backdrop-blur-md border border-slate-200/80 shadow-sm rounded-2xl p-6 transition-all duration-300;
+}
+
+.dark .glass-card {
+  @apply bg-slate-900/60 backdrop-blur-md border border-slate-800/80 shadow-md rounded-2xl p-6 transition-all duration-300;
+}
+
+/* Soft gradients */
+.gradient-primary {
+  @apply bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white;
+}
+
+.gradient-dark {
+  @apply bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 text-white;
+}
+
+.gradient-glow {
+  @apply relative overflow-hidden;
+}
+
+.gradient-glow::before {
+  content: '';
+  @apply absolute -inset-px bg-gradient-to-r from-blue-500 to-indigo-500 opacity-0 transition-opacity duration-300 -z-10 rounded-2xl;
+}
+
+.gradient-glow:hover::before {
+  @apply opacity-20;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 rounded-full;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  @apply bg-slate-800 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-400;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-700;
+}
